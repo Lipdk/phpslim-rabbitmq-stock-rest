@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class UserMigration extends AbstractMigration
+final class UserStockRequestMigration extends AbstractMigration
 {
     /**
      * Change Method.
@@ -18,14 +18,26 @@ final class UserMigration extends AbstractMigration
      */
     public function change(): void
     {
-        $table = $this->table('users');
-        $table->addColumn('username', 'string', ['limit' => 20])
-            ->addColumn('password', 'string', ['limit' => 80])
-            ->addColumn('email', 'string', ['limit' => 100])
-            ->addColumn('name', 'string', ['limit' => 200])
+        $table = $this->table('users_stock_requests');
+        $table->addColumn(
+            'user_id',
+            'integer',
+                [
+                    'null' => false,
+                    'signed' => false,
+                ]
+            )
+            ->addColumn('response', 'text', ['null' => false])
             ->addColumn('created_at', 'datetime')
             ->addColumn('updated_at', 'datetime', ['null' => true])
-            ->addIndex(['username', 'email'], ['unique' => true])
+            ->addForeignKey(
+                'user_id',
+                'users',
+                'id',
+                [
+                    'delete'=> 'CASCADE',
+                    'update'=> 'NO_ACTION'
+            ])
             ->create();
     }
 }
