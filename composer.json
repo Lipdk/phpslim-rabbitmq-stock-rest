@@ -14,7 +14,8 @@
         "ext-json": "*",
         "illuminate/database": "~5.1",
         "robmorgan/phinx": "^0.13.4",
-      "ext-curl": "*"
+      "ext-curl": "*",
+        "tuupola/slim-jwt-auth": "^3.7"
     },
     "scripts": {
         "start": "php -S localhost:8080 -t public",
