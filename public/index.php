@@ -21,6 +21,34 @@ $dependencies($containerBuilder);
 
 // Initialize app with PHP-DI
 $container = $containerBuilder->build();
+
+// >> Eloquent ORM
+// Add Eloquent ORM to Service Factories
+// TODO: Move to services.php
+
+$container['settings']['db'] = [
+    'driver' => 'mysql',
+    'host' => $_ENV['DB_HOST'] ?? 'db',
+    'database' => $_ENV['DB_DB'] ?? 'db',
+    'username' => $_ENV['DB_USERNAME'] ?? 'db',
+    'password' => $_ENV['DB_PASSWORD'] ?? 'db',
+    'charset'   => 'utf8',
+    'collation' => 'utf8_unicode_ci',
+    'prefix'    => '',
+];
+
+$container['db'] = function ($container) {
+    $capsule = new \Illuminate\Database\Capsule\Manager;
+    $capsule->addConnection($container['settings']['db']);
+
+    $capsule->setAsGlobal();
+    $capsule->bootEloquent();
+
+    return $capsule;
+};
+// Eloquent ORM <<
+// ---------------
+
 AppFactory::setContainer($container);
 
 $app = AppFactory::create();
