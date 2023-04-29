@@ -6,16 +6,21 @@ namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Swift_Mailer;
 use Swift_Message;
+use App\Models\User;
+use App\Models\UserStockRequest;
 
 class StockController
 {
-    /** @var \Swift_Mailer */
-    protected $mailer;
+    protected Swift_Mailer $mailer;
 
-    public function __construct(\Swift_Mailer $mailer)
+    protected User $user;
+
+    public function __construct(Swift_Mailer $mailer, User $user)
     {
         $this->mailer = $mailer;
+        $this->user = $user;
     }
 
     /**
@@ -26,6 +31,10 @@ class StockController
      */
     public function quote(Request $request, Response $response, array $args): Response
     {
+        // Get User
+        $userEmail = $request->getHeader('email')[0];
+        $user = $this->user->getUserByEmail($userEmail);
+
         $query = $request->getQueryParams();
         $stockCode = $query['q'] ?? null;
         $curlUrl = $_ENV['STOCK_API_URL'] ?? '';
@@ -65,24 +74,24 @@ class StockController
         $stock = array_combine(array_map('strtolower', $rows[0] ?? []), $rows[1] ?? []);
 
         // TODO: Save the $stock information into a Log table, keep together with the CURL Request
+        $userStockRequest = new UserStockRequest();
+        $userStockRequest->user_id = $user->id;
+        $userStockRequest->response = json_encode($stock);
+        $userStockRequest->save();
 
         // Remove some data that isn't supposed to be there according to the Wiki, and format numbers
         unset($stock['volume'], $stock['time'], $stock['date']);
         $stock['name'] = $stockCode;
-        $stock['open'] = (float)$stock['open'];
-        $stock['high'] = (float)$stock['high'];
-        $stock['low'] = (float)$stock['low'];
-        $stock['close'] = (float)$stock['close'];
+        $stock['open'] = number_format((float)$stock['open'], 2, '.', '' );
+        $stock['high'] = number_format((float)$stock['high'], 2, '.', '' );
+        $stock['low'] = number_format((float)$stock['low'], 2, '.', '' );
+        $stock['close'] = number_format((float)$stock['close'], 2, '.', '' );
         $jsonStock = json_encode($stock);
 
         // TODO: Send Email to the user that sent the Request
         // TODO: Move code to a Helper or a Service
         // TODO: Use RabbitMQ to Send the Emails
         if ($jsonStock) {
-            $user = new \stdClass;
-            $user->name = 'User Name';
-            $user->email = 'user_email@mail.com';
-
             $subject = "Stock Quote for {$stockCode} ({$stock['symbol']})";
 
             $html = <<<HTML
@@ -106,6 +115,49 @@ HTML;
         }
 
         $response->getBody()->write($jsonStock);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws \Exception
+     */
+    public function history(Request $request, Response $response, array $args): Response
+    {
+        // Get User
+        // TODO: The user should come from authentication, this is just a test
+        $user = User::find(1);
+
+        if (empty($user)) {
+            $response->getBody()->write(json_encode(['error' => 'User not found']));
+            return $response
+                ->withHeader('Content-Type', 'application/json');
+        }
+
+        $userStockRequests = UserStockRequest::where('user_id', $user->id)
+            ->select(['response', 'created_at'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $arr = $userStockRequests->toArray();
+
+        if (!empty($arr)) {
+            // Format array, decoding the response and handling the data according to the Wiki
+            $arr = array_map(function ($item) {
+                $a = json_decode($item['response'], true);
+                $date = new \DateTime($item['created_at']);
+                $a['date'] = $date->format("Y-m-d\TH:i:sp");
+                unset($a['time'], $a['volume']);
+                return $a;
+            }, $arr);
+        }
+
+        $response->getBody()->write(json_encode($arr));
+
         return $response
             ->withHeader('Content-Type', 'application/json');
     }

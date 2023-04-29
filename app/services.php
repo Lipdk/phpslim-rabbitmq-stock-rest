@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use DI\ContainerBuilder;
+use App\Models\User;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -18,6 +19,24 @@ return function (ContainerBuilder $containerBuilder) {
 
             return new Swift_Mailer($transport);
         },
+//        \Tuupola\Middleware\JwtAuthentication::class => function()
+//        {
+//            return new Tuupola\Middleware\JwtAuthentication([
+//                "ignore" => ['hello'],
+//                "header" => "Authorization",
+//                "secret" => 'secret',
+//                "algorithm"=>["HS512"],
+//                "attribute" => "jwt",
+//                "error" => function ($response, $arguments) {
+//                    $data["status"] = "false";
+//                    $data["message"] = $arguments["message"];
+//                    $response->getBody()->write(
+//                        json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)
+//                    );
+//                    return $response->withHeader("Content-Type", "application/json")->withStatus(401);
+//                }
+//            ]);
+//        }
     ]);
 
     $containerBuilder->addDefinitions([
