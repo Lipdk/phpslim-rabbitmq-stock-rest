@@ -129,14 +129,8 @@ HTML;
     public function history(Request $request, Response $response, array $args): Response
     {
         // Get User
-        // TODO: The user should come from authentication, this is just a test
-        $user = User::find(1);
-
-        if (empty($user)) {
-            $response->getBody()->write(json_encode(['error' => 'User not found']));
-            return $response
-                ->withHeader('Content-Type', 'application/json');
-        }
+        $userEmail = $request->getHeader('email')[0];
+        $user = $this->user->getUserByEmail($userEmail);
 
         $userStockRequests = UserStockRequest::where('user_id', $user->id)
             ->select(['response', 'created_at'])

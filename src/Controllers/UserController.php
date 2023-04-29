@@ -31,12 +31,16 @@ class UserController
         $body = $request->getParsedBody();
 
         try {
-            $user = $this->user->create($body);
+            $user = $this->user->store($body);
+            $token = $this->user->generateJwtToken($body['email']);
 
             if ($user instanceof User) {
-                return $this->renderer->json($response, ['success' => 'User created successfully'])
-                    ->withHeader("Content-Type", "application/json")
-                    ->withStatus(201);
+                return $this->renderer->json($response, [
+                    'success' => 'User created successfully',
+                    'token' => $token
+                ])
+                ->withHeader("Content-Type", "application/json")
+                ->withStatus(201);
             }
         } catch (\Exception $e) {
             return $this->renderer->json($response, ['error' => $e->getMessage()])

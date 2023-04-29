@@ -44,11 +44,7 @@ final class Auth
                         ->withStatus(401);
                 }
 
-                $expire = (new \DateTime('now'))->modify('+1 hour')->format('Y-m-d H:i:s');
-                $token = JWT::encode([
-                    'expired_at' => $expire,
-                    'email' => $user->email,
-                ], Config::getJwtKeyMaterial());
+                $token = $this->user->generateJwtToken($user->email);
 
                 return $this->renderer->json($response, ['success' => ['token' => $token]])
                     ->withHeader("Content-Type", "application/json")

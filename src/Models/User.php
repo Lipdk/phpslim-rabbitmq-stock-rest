@@ -2,26 +2,19 @@
 
 namespace App\Models;
 
-use App\Models\Category as Categories;
+use App\Utilities\Config;
+use Firebase\JWT\JWT;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class User extends Model
 {
-    public $username, $password, $name, $email;
     public $timestamps  = true;
     protected $fillable = ['username', 'password', 'name', 'email'];
     protected $table    = 'users';
-    protected $rules = [
-        'username' => 'required|min:3',
-        'name' => 'required|min:3',
-        'password' => 'required|min:6',
-        'email' => 'required|email|unique:users|email_address',
-    ];
 
-    public function setPassword(string $password): void
+    public function passwordHash(string $password)
     {
-        $this->password = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+        return password_hash($password, PASSWORD_BCRYPT);
     }
 
     public function stockRequests()
@@ -32,6 +25,11 @@ class User extends Model
     public function getUserByEmail(string $email)
     {
         return User::where('email', $email)->first();
+    }
+
+    public function getUserByUsername(string $username)
+    {
+        return User::where('username', $username)->first();
     }
 
     public function auth(string $email, string $password)
@@ -49,26 +47,63 @@ class User extends Model
         return $user;
     }
 
-    public function create(array $data)
+    /**
+     * @param array $data
+     * @return User
+     * @throws \Exception
+     */
+    public function store($data)
     {
-        $this->id = '';
-        $this->email = $data['email'] ?? '';
-        $this->name = $data['name'] ?? '';
-        $this->username = $data['username'] ?? '';
-        $this->setPassword($data['password'] ?? '');
-        return $this->store();
+        $payload = [
+            'name' => $data['name'] ?? '',
+            'username' => $data['username'] ?? '',
+            'password' => $this->passwordHash($data['password'] ?? ''),
+            'email' => $data['email'] ?? '',
+        ];
+
+        $this->validate($payload);
+
+        $user = $this->getUserByEmail($payload['email']);
+
+        if ($user instanceof User) {
+            throw new \Exception('User already exists');
+        }
+
+        $user = $this->getUserByUsername($payload['username']);
+
+        if ($user instanceof User) {
+            throw new \Exception('User already exists');
+        }
+
+        return User::create($payload);
     }
 
-    public function store()
+    /**
+     * @param array $payload
+     * @return void
+     * @throws \Exception
+     */
+    public function validate(array $payload)
     {
-        // TODO: Add illuminate/validation dependency and validate the data
-//        $this->validate();
+        if (empty($payload['email']) || empty($payload['name'] || empty($payload['username']) || empty($payload['password']))) {
+            throw new \Exception('All fields are required');
+        }
 
-        return User::updateOrCreate(['id' => $this->id], [
-            'name' => $this->name,
-            'username' => $this->username,
-            'password' => $this->password,
-            'email' => $this->email,
-        ]);
+        if (!filter_var($payload['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception('Invalid e-mail address');
+        }
+    }
+
+    /**
+     * @param string $email
+     * @return string
+     */
+    public function generateJwtToken(string $email)
+    {
+        $expire = (new \DateTime('now'))->modify('+1 hour')->format('Y-m-d H:i:s');
+        return JWT::encode([
+            'expired_at' => $expire,
+            'email' => $email,
+        ], Config::getJwtKeyMaterial());
     }
 }
