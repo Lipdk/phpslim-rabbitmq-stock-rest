@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Execute Phinx inside web container
+## Usage: phinx [phinx command]
+## Example: "ddev phinx"
+
+vendor/bin/phinx "$@"
