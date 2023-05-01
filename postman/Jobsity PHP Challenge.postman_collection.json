@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "e8d494a9-ac13-402a-8916-758d39be7c54",
+		"name": "Jobsity PHP Challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4763411",
+		"_collection_link": "https://w-4-mautic.postman.co/workspace/My-Workspace~04861fad-149d-4caf-8845-ffba62e173b7/collection/4763411-e8d494a9-ac13-402a-8916-758d39be7c54?action=share&creator=4763411&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "history",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "<token>",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://php-challenge.ddev.site/history",
+					"protocol": "https",
+					"host": [
+						"php-challenge",
+						"ddev",
+						"site"
+					],
+					"path": [
+						"history"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "stock",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "<token>",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://php-challenge.ddev.site/stock?q=googl.us",
+					"protocol": "https",
+					"host": [
+						"php-challenge",
+						"ddev",
+						"site"
+					],
+					"path": [
+						"stock"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "googl.us"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auth",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin@email.com",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "https://php-challenge.ddev.site/auth",
+					"protocol": "https",
+					"host": [
+						"php-challenge",
+						"ddev",
+						"site"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user/create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "User Full Name",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "email@domain.com",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "nickname",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://php-challenge.ddev.site/user/create",
+					"protocol": "https",
+					"host": [
+						"php-challenge",
+						"ddev",
+						"site"
+					],
+					"path": [
+						"user",
+						"create"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
