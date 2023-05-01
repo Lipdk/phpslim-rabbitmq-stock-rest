@@ -1,11 +1,19 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Utilities\Config;
+use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $name
+ * @property string $username
+ * @property string $password
+ * @property string $email
+ */
 class User extends Model
 {
     public $timestamps  = true;
@@ -50,7 +58,7 @@ class User extends Model
     /**
      * @param array $data
      * @return User
-     * @throws \Exception
+     * @throws Exception
      */
     public function store($data)
     {
@@ -66,13 +74,13 @@ class User extends Model
         $user = $this->getUserByEmail($payload['email']);
 
         if ($user instanceof User) {
-            throw new \Exception('User already exists');
+            throw new Exception('User already exists');
         }
 
         $user = $this->getUserByUsername($payload['username']);
 
         if ($user instanceof User) {
-            throw new \Exception('User already exists');
+            throw new Exception('User already exists');
         }
 
         return User::create($payload);
@@ -81,16 +89,16 @@ class User extends Model
     /**
      * @param array $payload
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function validate(array $payload)
     {
         if (empty($payload['email']) || empty($payload['name'] || empty($payload['username']) || empty($payload['password']))) {
-            throw new \Exception('All fields are required');
+            throw new Exception('All fields are required');
         }
 
         if (!filter_var($payload['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new \Exception('Invalid e-mail address');
+            throw new Exception('Invalid e-mail address');
         }
     }
 

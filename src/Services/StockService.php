@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services;
 
 use App\Utilities\Config;
-use StdClass;
+use DateTime;
 
 class StockService
 {
@@ -43,7 +44,7 @@ class StockService
             }
         }
 
-        $date = new \DateTime($response['date'] ?? 'now');
+        $date = new DateTime($response['date'] ?? 'now');
         $response['date'] = $date->format('Y-m-d\TH:i:s\Z');
 
         return $response;

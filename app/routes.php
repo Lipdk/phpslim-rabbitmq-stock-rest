@@ -6,46 +6,32 @@ use App\Controllers\Auth;
 use App\Controllers\HelloController;
 use App\Controllers\StockController;
 use App\Controllers\UserController;
-use Slim\App;
-use App\Models\Bootstrap;
-use App\Models\User;
-use Slim\Interfaces\RouteCollectorProxyInterface as Group;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Tuupola\Middleware\JwtAuthentication;
 use App\Middlewares\JwtAuth;
+use Slim\App;
+use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 return function (App $app)
 {
-    $container = $app->getContainer();
+    // Unprotected Routes
+    $app->group('', function (Group $group) use ($app) {
+        $app->get('/', HelloController::class . ':index');
+        $app->get('/hello/{name}', HelloController::class . ':hello');
 
-    // unprotected routes
-    $app->post("/auth", Auth::class);
-    $app->post("/user/create", UserController::class . ':create');
+        // Auth route
+        $app->post("/auth", Auth::class);
 
-    $app->get('/hello/{name}', HelloController::class . ':hello');
-
-    // protected routes
-    $app->get('/bye/{name}', HelloController::class . ':bye');
-
-    $app->get('/stock', StockController::class . ':quote');
-
-    $app->get('/stock-jwt', StockController::class . ':quote')
-        ->add(JwtAuth::class);
-
-    $app->get('/history', StockController::class . ':history');
-
-    $app->get('/history-jwt', StockController::class . ':history')
-        ->add(JwtAuth::class);
-
-    $app->get('/users', function (Request $request, Response $response) {
-        $users = User::all()->toArray();
-        $response->getbody()->write(json_encode($users));
-        return $response;
+        // Register user
+        $app->post("/user/create", UserController::class . ':create');
     });
 
-//    $app->group('/users', function (Group $group) use ($container) {
-//        $group->get('', ListUsersAction::class);
-//        $group->get('/{id}', ViewUserAction::class);
-//    });
+    // Protected Routes
+    $app->group('', function (Group $group) use ($app) {
+        // Stock Information
+        $app->get('/stock', StockController::class . ':quote')->add(JwtAuth::class);
+
+        // Get History of Stock Requests
+        $app->get('/history', StockController::class . ':history')->add(JwtAuth::class);
+
+        $app->get('/bye/{name}', HelloController::class . ':bye')->add(JwtAuth::class);
+    });
 };

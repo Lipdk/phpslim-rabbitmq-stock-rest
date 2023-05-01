@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Illuminate\Container\Container;
 
 final class Bootstrap
 {

@@ -7,6 +7,7 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
+use App\Console\Command\ConsumerCommand;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Symfony\Component\Dotenv\Dotenv;
@@ -32,8 +33,9 @@ $ENV = $_ENV['ENV'] ?? 'dev';
 $displayErrorDetails = $ENV == 'dev';
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 
+// Boot Symfony Console
 $symfonyApp = new Application();
-$symfonyApp->add(new \App\Console\Command\ConsumerCommand(
+$symfonyApp->add(new ConsumerCommand(
     $container->get('\App\Services\Queue\ConsumerService'),
     null
 ));

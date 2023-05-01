@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers;
 
@@ -46,7 +47,7 @@ final class Auth
 
                 return $this->renderer->json($response, ['success' => ['token' => $token]])
                     ->withHeader("Content-Type", "application/json")
-                    ->withStatus(201);
+                    ->withStatus(200);
             } else {
                 return $this->renderer->json($response, ['error' => 'Unauthorized access'])
                     ->withHeader('Content-Type', 'application/json')

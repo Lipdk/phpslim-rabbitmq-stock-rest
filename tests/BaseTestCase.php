@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Utilities\Config;
 use DI\ContainerBuilder;
 use Exception;
+use Firebase\JWT\JWT;
 use PHPUnit\Framework\TestCase as PHPUnit_TestCase;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -37,13 +39,13 @@ class BaseTestCase extends PHPUnit_TestCase
         $container = $containerBuilder->build();
         AppFactory::setContainer($container);
 
+        // Eloquent ORM
+        \App\Models\Bootstrap::load($container);
+
         $app = AppFactory::create();
 
         $routes = require __DIR__ . '/../app/routes.php';
         $routes($app);
-
-        $auth = require __DIR__ . '/../app/auth.php';
-        $auth($app);
 
         return $app;
     }
@@ -53,11 +55,22 @@ class BaseTestCase extends PHPUnit_TestCase
      */
     protected function getAuthorizationHeader(): String
     {
-        $adminTestingUsername = $_ENV["ADMIN_USERNAME"];
+        $adminTestingEmail = $_ENV["ADMIN_EMAIL"];
         $adminTestingPassword = $_ENV["ADMIN_PASSWORD"];
 
 
-        return 'Basic ' . base64_encode("$adminTestingUsername:$adminTestingPassword");
+        return 'Basic ' . base64_encode("$adminTestingEmail:$adminTestingPassword");
+    }
+
+    protected function getAuthorizationTokenHeader(): String
+    {
+        $expire = (new \DateTime('now'))->modify('+1 hour')->format('Y-m-d H:i:s');
+        $token = JWT::encode([
+            'expired_at' => $expire,
+            'email' => $_ENV["ADMIN_EMAIL"],
+        ], Config::getJwtKeyMaterial());
+
+        return "Bearer $token";
     }
 
     /**
@@ -72,10 +85,11 @@ class BaseTestCase extends PHPUnit_TestCase
         string $method,
         string $path,
         array $headers = ['HTTP_ACCEPT' => 'application/json'],
+        string $query = '',
         array $cookies = [],
         array $serverParams = []
     ): Request {
-        $uri = new Uri('', 'localhost', 80, $path);
+        $uri = new Uri('', 'localhost', 80, $path, $query);
         $handle = fopen('php://temp', 'w+');
         $stream = (new StreamFactory())->createStreamFromResource($handle);
 

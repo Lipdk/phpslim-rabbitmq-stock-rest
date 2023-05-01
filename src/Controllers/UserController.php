@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controllers;
@@ -40,16 +39,16 @@ class UserController
                     'token' => $token
                 ])
                 ->withHeader("Content-Type", "application/json")
-                ->withStatus(201);
+                ->withStatus(200);
             }
         } catch (\Exception $e) {
             return $this->renderer->json($response, ['error' => $e->getMessage()])
                 ->withHeader('Content-Type', 'application/json')
-                ->withStatus(500);
+                ->withStatus(422);
         }
 
         return $this->renderer->json($response, ['error' => 'An error occurred while creating the user'])
             ->withHeader('Content-Type', 'application/json')
-            ->withStatus(401);
+            ->withStatus(500);
     }
 }

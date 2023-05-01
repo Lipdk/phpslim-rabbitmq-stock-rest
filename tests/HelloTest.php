@@ -1,10 +1,7 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Tests;
-
-use Slim\Exception\HttpUnauthorizedException;
 
 /**
  * Class HelloTest
@@ -27,6 +24,19 @@ class HelloTest extends BaseTestCase
         $this->app = $this->getAppInstance();
     }
 
+    public function testIndex()
+    {
+        // Arrange
+        $request = $this->createRequest('GET', '/');
+
+        // Act
+        $response = $this->app->handle($request);
+        $body = (string) $response->getBody();
+
+        // Assert
+        $this->assertEquals("Up and running!", $body);
+    }
+
     public function testHelloEndpoint()
     {
         // Arrange
@@ -45,17 +55,18 @@ class HelloTest extends BaseTestCase
         // Arrange
         $request = $this->createRequest('GET', '/bye/MyName');
 
-        // Assert
-        $this->expectException(HttpUnauthorizedException::class);
-
         // Act
         $response = $this->app->handle($request);
+        $code = $response->getStatusCode();
+
+        // Assert
+        $this->assertEquals(401, $code);
     }
 
     public function testByeEndpointWithBasicAuth()
     {
         // Arrange
-        $headers = ['HTTP_ACCEPT' => 'application/json', 'Authorization' => $this->getAuthorizationHeader()];
+        $headers = ['HTTP_ACCEPT' => 'application/json', 'Authorization' => $this->getAuthorizationTokenHeader()];
         $request = $this->createRequest('GET', '/bye/My Name', $headers);
 
         // Act

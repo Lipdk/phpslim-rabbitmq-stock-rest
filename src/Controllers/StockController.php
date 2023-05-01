@@ -46,7 +46,7 @@ class StockController
         $stockCode = $query['q'] ?? null;
 
         if (empty($stockCode)) {
-            $response->getBody()->write(json_encode(['error' => 'Invalid request']));
+            $response->getBody()->write(json_encode(['error' => 'Missing Stock Code']));
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(422);
@@ -54,7 +54,7 @@ class StockController
 
         $stock = $this->stockService->getStockInfo($stockCode);
 
-        if (empty($stock) || !isset($stock['symbol'])) {
+        if (empty($stock) || !isset($stock['name'])) {
             $response->getBody()->write(json_encode(['error' => 'Stock not found!']));
             return $response
                 ->withHeader('Content-Type', 'application/json')
@@ -102,7 +102,7 @@ class StockController
             // Format array, decoding the response and handling the data according to the Wiki
             $arr = array_map(function ($item) {
                 $a = json_decode($item['response'], true);
-                $date = new \DateTime($item['created_at']);
+                $date = new \DateTime($item['date'] ?? $item['created_at']);
                 $a['date'] = $date->format("Y-m-d\TH:i:sp");
                 unset($a['time'], $a['volume']);
                 return $a;

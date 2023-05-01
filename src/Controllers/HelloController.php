@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controllers;
@@ -10,10 +9,14 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class HelloController
 {
     /**
-     * HelloController constructor.
+     * @param Request $request
+     * @param Response $response
+     * @return Response
      */
-    public function __construct()
+    public function index(Request $request, Response $response): Response
     {
+        $response->getBody()->write("Up and running!");
+        return $response;
     }
 
     /**
