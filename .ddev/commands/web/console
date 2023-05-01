@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Execute Symfony Console inside web container
+## Usage: console [command]
+## Example: "ddev console"
+
+php bin/console "$@"
