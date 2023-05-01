@@ -3,9 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
-use App\Utilities\Config;
 use App\Utilities\JsonRenderer;
-use Firebase\JWT\JWT;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 

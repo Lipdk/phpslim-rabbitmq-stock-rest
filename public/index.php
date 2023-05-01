@@ -16,7 +16,7 @@ $ENV = $_ENV['ENV'] ?? 'dev';
 $containerBuilder = new ContainerBuilder();
 
 // Import services
-$dependencies = require __DIR__ . '/../app/services.php';
+$dependencies = require_once __DIR__ . '/../app/services.php';
 $dependencies($containerBuilder);
 
 // Initialize app with PHP-DI
@@ -30,12 +30,8 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 
 // Register routes
-$routes = require __DIR__ . '/../app/routes.php';
+$routes = require_once __DIR__ . '/../app/routes.php';
 $routes($app);
-
-// Setup Basic Auth
-$auth = require __DIR__ . '/../app/auth.php';
-$auth($app);
 
 $displayErrorDetails = $ENV == 'dev';
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);

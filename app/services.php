@@ -2,7 +2,8 @@
 declare(strict_types=1);
 
 use DI\ContainerBuilder;
-use App\Models\User;
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -19,36 +20,9 @@ return function (ContainerBuilder $containerBuilder) {
 
             return new Swift_Mailer($transport);
         },
-//        \Tuupola\Middleware\JwtAuthentication::class => function()
-//        {
-//            return new Tuupola\Middleware\JwtAuthentication([
-//                "ignore" => ['hello'],
-//                "header" => "Authorization",
-//                "secret" => 'secret',
-//                "algorithm"=>["HS512"],
-//                "attribute" => "jwt",
-//                "error" => function ($response, $arguments) {
-//                    $data["status"] = "false";
-//                    $data["message"] = $arguments["message"];
-//                    $response->getBody()->write(
-//                        json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)
-//                    );
-//                    return $response->withHeader("Content-Type", "application/json")->withStatus(401);
-//                }
-//            ]);
-//        }
-    ]);
 
-    $containerBuilder->addDefinitions([
         'settings' => [
             'displayErrorDetails' => $_ENV['ENV'] == 'dev',
-//            'logger' => [
-//                'name' => 'slim-app',
-//                'path' => isset($_ENV['docker']) ? 'php://stdout'
-//                    : __DIR__ . '/../logs/app.log',
-//                'level' => Logger::DEBUG,
-//            ],
-
             'db' => [
                 'driver' => 'mysql',
                 'host' => $_ENV['DB_HOST'] ?? 'db',
@@ -60,5 +34,16 @@ return function (ContainerBuilder $containerBuilder) {
                 'prefix'    => '',
             ],
         ],
+
+        AMQPChannel::class => function () {
+            $connection = new AMQPStreamConnection(
+                $_ENV['RMQ_HOST'],
+                $_ENV['RMQ_PORT'],
+                $_ENV['RMQ_USERNAME'],
+                $_ENV['RMQ_PASSWORD'],
+                $_ENV['RMQ_VHOST']
+            );
+            return $connection->channel();
+        }
     ]);
 };
