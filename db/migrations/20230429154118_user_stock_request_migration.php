@@ -30,6 +30,8 @@ final class UserStockRequestMigration extends AbstractMigration
             ->addColumn('response', 'text', ['null' => false])
             ->addColumn('created_at', 'datetime')
             ->addColumn('updated_at', 'datetime', ['null' => true])
+            ->addColumn('queued', 'boolean', ['default' => false])
+            ->addColumn('email_sent', 'boolean', ['default' => false])
             ->addForeignKey(
                 'user_id',
                 'users',
