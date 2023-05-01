@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+if (PHP_SAPI !== 'cli') {
+    echo 'bin/console must be run as a CLI application';
+    exit(1);
+}
+
+use DI\ContainerBuilder;
+use Slim\Factory\AppFactory;
+use Symfony\Component\Dotenv\Dotenv;
+use Symfony\Component\Console\Application;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__ . '/../.env');
+
+$containerBuilder = new ContainerBuilder();
+$dependencies = require_once __DIR__ . '/../app/services.php';
+$dependencies($containerBuilder);
+
+$container = $containerBuilder->build();
+
+// Eloquent ORM
+App\Models\Bootstrap::load($container);
+AppFactory::setContainer($container);
+$app = AppFactory::create();
+
+$ENV = $_ENV['ENV'] ?? 'dev';
+$displayErrorDetails = $ENV == 'dev';
+$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
+
+$symfonyApp = new Application();
+$symfonyApp->add(new \App\Console\Command\ConsumerCommand(
+    $container->get('\App\Services\Queue\ConsumerService'),
+    null
+));
+$symfonyApp->run();
